@@ -5,6 +5,12 @@ const TransferWebpackPlugin = require('transfer-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
+  watch: true,
+  watchOptions: {
+    aggregateTimeout: 300,
+    poll: 1000,
+    ignored: /node_modules/,
+  },
   entry: './src/index.jsx',
   resolve: {
     extensions: ['.js', '.jsx'],
