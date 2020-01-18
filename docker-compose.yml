@@ -12,3 +12,4 @@ services:
       - "8000:8000"
     volumes:
       - ./frontend/:/usr/src/weatherapp_frontend/:ro
+      - /usr/src/weatherapp_frontend/node_modules/
