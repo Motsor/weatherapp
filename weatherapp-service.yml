@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weatherapp
+  labels:
+    app: weatherapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: weatherapp
+  template:
+    metadata:
+      labels:
+        app: weatherapp
+    spec:
+      containers:
+      - name: weatherapp-backend
+        image: weatherapp_backend:1.0.0
+        ports:
+        - containerPort: 9000
+      - name: weatherapp-frontend
+        image: weatherapp_frontend:1.0.0
+        ports:
+        - containerPort: 9000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: weatherapp
+spec:
+  selector:
+    app: weatherapp
+  ports:
+    - protocol: TCP
+      name: weatherapp-backend
+      port: 9000
+      targetPort: 9000
+    - protocol: TCP
+      name: weatherapp-frontend
+      port: 8000
+      targetPort: 8000
