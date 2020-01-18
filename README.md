@@ -7,71 +7,83 @@ Luckily we now have [docker compose](https://docs.docker.com/compose/) saving us
 ## Prerequisites
 
 * An [openweathermap](http://openweathermap.org/) API key.
+* [Docker](https://docs.docker.com/install/)
+* [Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/)
+* The [Kubernetes](https://kubernetes.io/) command-line tool, [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
-## Returning your solution
+## Changes to the base project
 
-### Via github
+### Backend service
 
-* Make a copy of this repository in your own github account (do not fork unless you really want to be public).
-* Create a personal repository in github.
-* Make changes, commit them, and push them in your own repository.
-* Send us the url where to find the code.
+* Added a Dockerfile to containerize the API
+* Fetched more data from OpenWeatherMap API
 
-### Via tar-package
+```
+{
+    weather: {
+        id: 804,
+        main: "Clouds",
+        description: "overcast clouds",
+        icon: "04n"
+    },
+    main: {
+        temp: 5.04,
+        feels_like: -2.37,
+        temp_min: 5,
+        temp_max: 5.56,
+        pressure: 1008,
+        humidity: 93
+    },
+    location: "Helsinki",
+    dt: 1579379340
+}
+```
+* Added [dotenv](https://www.npmjs.com/package/dotenv). The API key for OpenWeatherMap should be added to a *.env* file: `APPID=YOUR_API_KEY`
 
-* Clone this repository.
-* Make changes and **commit them**.
-* Create a **.tgz** -package including the **.git**-directory, but excluding the **node_modules**-directories.
-* Send us the archive.
+![Weatherapp REST API](/img/api.PNG)
 
-## Exercises
+### Frontend service
 
-Here are some things in different categories that you can do to make the app better. Before starting you need to get yourself an API key to make queries in the [openweathermap](http://openweathermap.org/). You can run the app locally using `npm i && npm start`.
+* Added a Dockerfile to containerize the API
+* Added Webpack hot reloading
+```
+{
+    watch: true,
+    watchOptions: {
+        aggregateTimeout: 300,
+        poll: 1000,
+        ignored: /node_modules/,
+    }
+}
+```
+* Display the city, date and time, description of the weather and the degree in the UI.
+* Added simple inputs to fetch the weather data of the specified city.
 
-### Docker
+![Weatherapp user interface](/img/ui.PNG)
 
-*Docker containers are central to any modern development initiative. By knowing how to set up your application into containers and make them interact with each other, you have learned a highly useful skill.*
+### Other
 
-* Add **Dockerfile**'s in the *frontend* and the *backend* directories to run them virtually on any environment having [docker](https://www.docker.com/) installed. It should work by saying e.g. `docker build -t weatherapp_backend . && docker run --rm -i -p 9000:9000 --name weatherapp_backend -t weatherapp_backend`. If it doesn't, remember to check your api key first.
+* Created a compose file to setup both the backend and frontend services with volumes for the local development and hot reloading.
 
-* Add a **docker-compose.yml** -file connecting the frontend and the backend, enabling running the app in a connected set of containers.
+## Deploying to minikube
 
-* The developers are still keen to run the app and its pipeline on their own computers. Share the development files for the container by using volumes, and make sure the containers are started with a command enabling hot reload.
+Firstly, the OpenWeatherMap API key should be added as a environment variable to the *.env* file in the backend services folder.
 
-### Node and React development
+Then, the docker images need to be built using the following command: `docker-compose build`.
 
-*Node and React applications are highly popular technologies. Understanding them will give you an advantage in front- and back-end development projects.*
+Next start up minikube: `sudo minikube start --vm-driver=none`
 
-* The application now only reports the current weather. It should probably report the forecast e.g. a few hours from now. (tip: [openweathermap api](https://openweathermap.org/forecast5))
+* To access dashboard:
+    * Run: sudo minikube dashboard
+        * Press ctrl+c once you see: http://127.0.0.1:43661/api/v1/...
+    * kubectl port-forward -n kubernetes-dashboard service/kubernetes-dashboard --address 0.0.0.0
+8080:80
 
-* There are [eslint](http://eslint.org/) errors. Sloppy coding it seems. Please help.
+Then, there is a Kubernetes template file in the root of the project named [weatherapp-service.yml](https://github.com/Motsor/weatherapp/blob/master/weatherapp-service.yml) that takes care of the creation of the kubernetes pods, deployment and service. Apply the resources in the Kubernetes template file with the following command: `kubectl apply -f weatherapp-service.yml`
 
-* The app currently reports the weather only for location defined in the *backend*. Shouldn't it check the browser location and use that as the reference for making a forecast? (tip: [geolocation](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/Using_geolocation))
+The backend and the frontend services are now simply running at port **9000** and **8000**.
 
-### Testing
+**NOTE!**
+If you are developing in a Vagrant virtual machine then it is necessary to expose Kubernetes service outide Vagrant using port-forwarding:
 
-*Test automation is key in developing good quality applications. Finding bugs in early stages of development is valuable in any software development project. With Robot Framework you can create integration tests that also serve as feature descriptions, making them exceptionally useful.*
-
-* Create automated tests for the application. (tip: [mocha](https://mochajs.org/))
-
-* Create [Robot Framework](http://robotframework.org/) integration tests. Hint: Start by creating a third container that gives expected weather data and direct the backend queries there by redefining the **MAP_ENDPOINT**.
-
-### Cloud
-
-*The biggest trend of recent times is developing, deploying and hosting your applications in cloud. Knowing cloud -related technologies is essential for modern IT specialists.*
-
-* Set up the weather service in a free cloud hosting service, e.g. [AWS](https://aws.amazon.com/free/) or [Google Cloud](https://cloud.google.com/free/).
-
-### Ansible
-
-*Automating deployment processes saves a lot of valuable time and reduces chances of costly errors. Infrastructure as Code removes manual steps and allows people to concentrate on core activities.*
-
-* Write [ansible](http://docs.ansible.com/ansible/intro.html) playbooks for installing [docker](https://www.docker.com/) and the app itself.
-
-### Documentation
-
-*Good documentation benefits everyone.*
-
-* Remember to update the README
-
-* Use descriptive names and add comments in the code when necessary
+`kubetctl port-forward servie/weatherapp --address 0.0.0.0 9000:9000 8000:8000`

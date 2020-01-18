@@ -63,7 +63,7 @@ class Weather extends React.Component {
         <div>
           <label htmlFor="city">City: </label>
           <input id="city" type="text" value={this.state.searchValue} onChange={this.handleChange} />
-          <input type="submit" value="Submit" onClick={this.handleSubmit} />
+          <input type="submit" value="Search" onClick={this.handleSubmit} />
         </div>
         {
         weatherData.weather ? <WeatherCard weatherData={weatherData} /> : <p>Location not found.</p>
