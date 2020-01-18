@@ -16,11 +16,11 @@ spec:
     spec:
       containers:
       - name: weatherapp-backend
-        image: weatherapp_backend:1.0.0
+        image: weatherapp_backend:2.0.0
         ports:
         - containerPort: 9000
       - name: weatherapp-frontend
-        image: weatherapp_frontend:1.0.0
+        image: weatherapp_frontend:2.0.0
         ports:
         - containerPort: 9000
 ---
